@@ -98,35 +98,69 @@ if search_button:
         # 키워드 리스트 생성
         keyword_list = [k.strip() for k in keywords.split('\n') if k.strip()]
         
-        # 검색 엔진 초기화
-        config = Config(api_key=api_key)
-        search_engine = GridSearchEngine(config)
+        # 진행률 표시 컨테이너
+        progress_container = st.empty()
         
-        # 검색 진행
-        with st.spinner("검색 중..."):
-            start_time = time.time()
-            results = search_engine.search_grid(
-                center_lat=center_lat,
-                center_lng=center_lng,
-                radius_km=radius,
-                keywords=keyword_list,
-                grid_size=grid_size,
-                extract_emails=extract_emails
-            )
-            end_time = time.time()
-            search_duration = end_time - start_time
-        
-        # 결과를 세션 상태에 저장
-        st.session_state.search_results = results
-        st.session_state.search_duration = search_duration
-        st.session_state.search_params = {
-            'center_lat': center_lat,
-            'center_lng': center_lng,
-            'radius': radius,
-            'keywords': keyword_list,
-            'grid_size': grid_size,
-            'extract_emails': extract_emails
-        }
+        with progress_container.container():
+            # 진행률 표시 준비
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+            
+            def update_progress(progress: float, message: str):
+                """진행률 업데이트 콜백 함수"""
+                progress_bar.progress(progress)
+                status_text.text(message)
+            
+            try:
+                start_time = time.time()
+                
+                # 검색 엔진 생성
+                config = Config(api_key=api_key)
+                search_engine = GridSearchEngine(config)
+                
+                # 격자 검색 수행 (진행률 콜백 포함)
+                results = search_engine.search_grid(
+                    center_lat=center_lat,
+                    center_lng=center_lng,
+                    radius_km=radius,
+                    keywords=keyword_list,
+                    grid_size=grid_size,
+                    extract_emails=extract_emails,
+                    progress_callback=update_progress
+                )
+                
+                end_time = time.time()
+                search_duration = end_time - start_time
+                
+                # 검색 결과를 세션 상태에 저장
+                st.session_state.search_results = results
+                st.session_state.search_duration = search_duration
+                st.session_state.search_params = {
+                    'center_lat': center_lat,
+                    'center_lng': center_lng,
+                    'radius': radius,
+                    'keywords': keyword_list,
+                    'grid_size': grid_size,
+                    'extract_emails': extract_emails
+                }
+                
+                # 진행률 완료 후 상태 표시
+                status_text.success(f"✅ 검색 완료! ({search_duration:.1f}초 소요)")
+                
+                # 2초 후 진행률 컨테이너 제거
+                time.sleep(2)
+                progress_container.empty()
+                
+                # 페이지 새로고침하여 결과 표시
+                st.rerun()
+                
+            except Exception as e:
+                progress_bar.empty()
+                status_text.error(f"❌ 검색 중 오류 발생: {str(e)}")
+                st.error(f"검색 실행 중 오류가 발생했습니다: {str(e)}")
+                # 오류 시에도 진행률 컨테이너 제거
+                time.sleep(3)
+                progress_container.empty()
 
 # 결과 표시 (세션 상태에서 가져옴)
 if st.session_state.search_results is not None:

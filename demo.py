@@ -260,6 +260,105 @@ def demo_distance_calculation():
         print(f"{center_name} → {name}: {distance:.2f}km")
 
 
+def demo_progress_tracking():
+    """진행률 추적 데모"""
+    print("\n" + "=" * 50)
+    print("진행률 추적 데모")
+    print("=" * 50)
+    
+    from backend.config import Config
+    from backend.search_engine import GridSearchEngine
+    
+    # Mock config (실제 API 키 없이)
+    config = Config(api_key="mock_api_key")
+    
+    print("진행률 콜백 함수 시뮬레이션:")
+    print()
+    
+    def mock_progress_callback(progress: float, message: str):
+        """모의 진행률 콜백 함수"""
+        # 진행률을 시각적으로 표시
+        bar_length = 30
+        filled_length = int(bar_length * progress)
+        bar = '█' * filled_length + '-' * (bar_length - filled_length)
+        percent = progress * 100
+        
+        print(f"\r[{bar}] {percent:6.1f}% - {message}", end='', flush=True)
+        
+        if progress >= 1.0:
+            print()  # 완료 시 새 줄
+    
+    print("실제 검색에서의 진행률 단계:")
+    print()
+    
+    # 진행률 시뮬레이션
+    import time
+    
+    # 1단계: 격자 계산
+    mock_progress_callback(0.02, "격자 포인트 계산 중...")
+    time.sleep(0.5)
+    
+    # 2단계: 검색 진행 (60%)
+    search_steps = [
+        "검색 중... (1/8) 격자 1/4, 키워드: '카페'",
+        "검색 중... (2/8) 격자 1/4, 키워드: '음식점'",
+        "검색 중... (3/8) 격자 2/4, 키워드: '카페'",
+        "검색 중... (4/8) 격자 2/4, 키워드: '음식점'",
+        "검색 중... (5/8) 격자 3/4, 키워드: '카페'",
+        "검색 중... (6/8) 격자 3/4, 키워드: '음식점'",
+        "검색 중... (7/8) 격자 4/4, 키워드: '카페'",
+        "검색 중... (8/8) 격자 4/4, 키워드: '음식점'"
+    ]
+    
+    for i, step in enumerate(search_steps):
+        progress = 0.02 + (i + 1) / len(search_steps) * 0.60
+        mock_progress_callback(progress, step)
+        time.sleep(0.3)
+    
+    # 3단계: 상세 정보 수집 (30%)
+    detail_steps = [
+        "상세 정보 수집 중... (1/15) 스타벅스 강남점",
+        "상세 정보 수집 중... (5/15) 이디야커피 역삼점", 
+        "상세 정보 수집 중... (10/15) 맥도날드 테헤란점",
+        "상세 정보 수집 중... (15/15) 버거킹 선릉점"
+    ]
+    
+    for i, step in enumerate(detail_steps):
+        progress = 0.62 + (i + 1) / len(detail_steps) * 0.30
+        mock_progress_callback(progress, step)
+        time.sleep(0.4)
+    
+    # 4단계: 이메일 추출 (8%)
+    email_steps = [
+        "이메일 추출 중... (1/8) 스타벅스 강남점",
+        "이메일 추출 중... (3/8) 이디야커피 역삼점",
+        "이메일 추출 중... (6/8) 맥도날드 테헤란점",
+        "이메일 추출 중... (8/8) 버거킹 선릉점"
+    ]
+    
+    for i, step in enumerate(email_steps):
+        progress = 0.92 + (i + 1) / len(email_steps) * 0.08
+        mock_progress_callback(progress, step)
+        time.sleep(0.6)
+    
+    # 완료
+    mock_progress_callback(1.0, "검색 완료! 총 15개 결과 발견")
+    time.sleep(0.5)
+    
+    print("\n")
+    print("📊 진행률 단계 설명:")
+    print("  2% - 격자 포인트 계산")
+    print(" 60% - Places API 검색 (격자별 × 키워드별)")
+    print(" 30% - Places Details API (상세 정보 수집)")
+    print("  8% - 이메일 추출 (웹사이트 크롤링)")
+    print()
+    print("💡 실제 애플리케이션에서는:")
+    print("- Streamlit의 st.progress()로 진행바 표시")
+    print("- st.empty()와 st.text()로 상태 메시지 업데이트")
+    print("- 각 단계별로 실시간 진행률 표시")
+    print("- 오류 발생 시 에러 메시지와 함께 진행률 숨김")
+
+
 if __name__ == "__main__":
     try:
         demo_grid_calculation()
@@ -267,6 +366,7 @@ if __name__ == "__main__":
         demo_enhanced_email_extraction()
         demo_obfuscated_emails()
         demo_mock_search()
+        demo_progress_tracking()
         
     except Exception as e:
         print(f"데모 실행 중 오류 발생: {e}")
