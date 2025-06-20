@@ -41,10 +41,10 @@ def demo_grid_calculation():
         print(f"격자 {i}: ({lat:.4f}, {lng:.4f}), 반지름: {grid_radius:.2f}km, 중심거리: {distance:.2f}km")
 
 
-def demo_email_extraction():
-    """이메일 추출 데모"""
+def demo_enhanced_email_extraction():
+    """향상된 이메일 추출 데모"""
     print("\n" + "=" * 50)
-    print("이메일 추출 데모")
+    print("향상된 이메일 추출 데모")
     print("=" * 50)
     
     extractor = EmailExtractor()
@@ -54,28 +54,106 @@ def demo_email_extraction():
         "https://www.starbucks.co.kr",  # 스타벅스
         "https://www.ediya.com",       # 이디야
         "https://www.hollys.co.kr",    # 할리스
+        "https://www.twosome.co.kr",   # 투썸플레이스
     ]
+    
+    print("향상된 이메일 추출 기능:")
+    print("✅ 표준 이메일 패턴")
+    print("✅ 난독화된 이메일 (email[at]domain[dot]com)")
+    print("✅ JavaScript에 숨겨진 이메일")
+    print("✅ 연락 양식의 action 속성")
+    print("✅ 숨겨진 입력 필드")
+    print("✅ HTML 주석 내부")
+    print("✅ 30자 초과 이메일 자동 제외")
+    print()
     
     print("실제 웹사이트에서 이메일 추출 테스트:")
     print("(인터넷 연결이 필요합니다)")
     print()
     
+    total_emails_found = 0
+    
     for website in test_websites:
         print(f"📧 {website}에서 이메일 추출 중...")
         try:
+            start_time = time.time()
             emails = extractor.extract_emails_from_website(website)
+            end_time = time.time()
+            
             if emails:
-                print(f"  ✅ 발견된 이메일: {', '.join(emails)}")
+                print(f"  ✅ 발견된 이메일 ({len(emails)}개): {', '.join(emails)}")
+                total_emails_found += len(emails)
+                
+                # 이메일 길이 체크
+                for email in emails:
+                    if len(email) <= 30:
+                        print(f"    ✓ {email} (길이: {len(email)}자)")
+                    else:
+                        print(f"    ✗ {email} (길이: {len(email)}자 - 너무 길어서 제외됨)")
+                        
             else:
                 print(f"  ❌ 이메일을 찾을 수 없습니다.")
+            
+            print(f"  🕒 소요시간: {end_time - start_time:.1f}초")
+            
         except Exception as e:
             print(f"  ❌ 오류 발생: {e}")
         print()
     
-    print("💡 참고사항:")
-    print("- 실제 웹사이트들은 이메일을 다양한 방식으로 숨기거나 보호할 수 있습니다.")
-    print("- 일부 사이트는 이메일 대신 연락 양식만 제공할 수 있습니다.")
-    print("- 이메일 추출 성공률은 웹사이트 구조에 따라 달라집니다.")
+    print(f"📊 총 {total_emails_found}개의 이메일을 발견했습니다.")
+    print()
+    
+    print("💡 향상된 기능 설명:")
+    print("- 다양한 형태의 난독화된 이메일까지 감지")
+    print("- JavaScript 내부에 숨겨진 이메일 추출")
+    print("- 연락 양식과 숨겨진 요소에서도 이메일 검색")
+    print("- 30자가 넘는 암호화된 이메일 자동 제외")
+    print("- 가짜/테스트 이메일 필터링")
+    print("- 비즈니스 이메일 우선순위 정렬")
+
+
+def demo_obfuscated_emails():
+    """난독화된 이메일 처리 데모"""
+    print("\n" + "=" * 50)
+    print("난독화된 이메일 처리 데모")
+    print("=" * 50)
+    
+    extractor = EmailExtractor()
+    
+    # 테스트용 난독화된 이메일들
+    test_emails = [
+        "contact@example.com",                    # 정상 이메일
+        "info[at]company[dot]com",               # [at][dot] 형태
+        "support(at)business(dot)co(dot)kr",     # (at)(dot) 형태
+        "hello AT domain DOT com",               # 대문자 형태
+        "admin @ website . org",                 # 공백이 있는 형태
+        "verylongencryptedkey123456789@domain.com",  # 30자 초과 (제외되어야 함)
+        "test@test.com",                         # 가짜 이메일 (제외되어야 함)
+        "contact",                               # 불완전한 이메일
+        "sales@",                                # 불완전한 이메일
+    ]
+    
+    print("난독화된 이메일 처리 테스트:")
+    print()
+    
+    for test_email in test_emails:
+        cleaned = extractor._clean_obfuscated_email(test_email)
+        is_valid = extractor._is_basic_email_valid(cleaned) if cleaned else False
+        
+        status = "✅" if is_valid else "❌"
+        result = cleaned if cleaned else "처리 실패"
+        
+        print(f"{status} '{test_email}' → '{result}'")
+        
+        if cleaned and len(cleaned) > 30:
+            print(f"    ⚠️  길이 {len(cleaned)}자로 30자 초과하여 제외됨")
+    
+    print()
+    print("필터링 규칙:")
+    print("- 30자 초과 이메일 제외")
+    print("- test@test.com 같은 가짜 이메일 제외")
+    print("- 불완전한 이메일 형식 제외")
+    print("- 숫자가 70% 이상인 이메일 제외")
 
 
 def demo_mock_search():
@@ -101,7 +179,7 @@ def demo_mock_search():
     print(f"  반지름: {radius_km}km")
     print(f"  격자 크기: {grid_size}x{grid_size}")
     print(f"  키워드: {keywords}")
-    print(f"  이메일 추출: 활성화")
+    print(f"  향상된 이메일 추출: 활성화")
     print()
     
     grid_points = calculator.calculate_grid_points(
@@ -124,18 +202,28 @@ def demo_mock_search():
         for keyword in keywords:
             print(f"  → '{keyword}' 검색 (최대 20개 결과)")
             print(f"    → 각 결과의 상세 정보 API 호출")
-            print(f"    → 웹사이트가 있는 경우 이메일 추출")
+            print(f"    → 웹사이트가 있는 경우 향상된 이메일 추출")
     
-    print("\n📧 이메일 추출 과정:")
+    print("\n📧 향상된 이메일 추출 과정:")
     print("1. Google Places API에서 장소 정보 검색")
-    print("2. Places Details API로 웹사이트 URL 획득")
-    print("3. 웹사이트 크롤링:")
+    print("2. Places Details API로 웹사이트 URL 획득") 
+    print("3. 다중 페이지 웹사이트 크롤링:")
     print("   - 메인 페이지")
-    print("   - /contact, /contact-us")
-    print("   - /about, /about-us")
+    print("   - /contact, /contact-us, /contactus")
+    print("   - /about, /about-us, /aboutus")
     print("   - /support, /help, /info")
-    print("4. 이메일 주소 정규식으로 추출")
-    print("5. 중복 제거 및 필터링")
+    print("   - /inquiry, /customer-service, /feedback")
+    print("4. 다양한 방법으로 이메일 추출:")
+    print("   - 텍스트 내용에서 표준/난독화 이메일")
+    print("   - mailto 링크")
+    print("   - 연락 양식의 action 속성")
+    print("   - JavaScript 코드 내부")
+    print("   - 숨겨진 입력 필드")
+    print("   - HTML 주석")
+    print("5. 이메일 정리 및 필터링:")
+    print("   - 30자 초과 이메일 제외")
+    print("   - 가짜/테스트 이메일 제거")
+    print("   - 비즈니스 이메일 우선순위 정렬")
     
     print("\n실제 검색을 위해서는 Google Places API 키가 필요합니다.")
     print("API 키를 얻는 방법:")
@@ -176,7 +264,8 @@ if __name__ == "__main__":
     try:
         demo_grid_calculation()
         demo_distance_calculation()
-        demo_email_extraction()
+        demo_enhanced_email_extraction()
+        demo_obfuscated_emails()
         demo_mock_search()
         
     except Exception as e:
