@@ -37,9 +37,9 @@ with st.sidebar:
     st.subheader("📍 중심점 설정")
     col1, col2 = st.columns(2)
     with col1:
-        center_lat = st.number_input("위도", value=37.5665, format="%.6f", step=0.000001)
+        center_lat = st.number_input("위도", value=32.9986389, format="%.6f", step=0.000001)
     with col2:
-        center_lng = st.number_input("경도", value=126.9780, format="%.6f", step=0.000001)
+        center_lng = st.number_input("경도", value=-96.9076667, format="%.6f", step=0.000001)
     
     # 검색 반지름 설정
     st.subheader("📏 검색 반지름")
